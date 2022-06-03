@@ -1,4 +1,4 @@
-package de.hawhamburg.rn.praktikum2;
+package de.hawhamburg.rn.test2;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -2,6 +2,8 @@ package de.hawhamburg.rn.praktikum2;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 
 public class Header {
@@ -46,5 +48,13 @@ public class Header {
 
   public byte[] getHeader() {
     return header;
+  }
+
+  public Inet4Address getSourceIP() throws UnknownHostException {
+    return (Inet4Address) Inet4Address.getByAddress(srcIP);
+  }
+
+  public Inet4Address getDestinationIP() throws UnknownHostException {
+    return (Inet4Address) Inet4Address.getByAddress(destIP);
   }
 }

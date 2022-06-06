@@ -43,4 +43,8 @@ public class Header {
     destIP = Arrays.copyOfRange(header, 8, 12);
     checksum = Arrays.copyOfRange(header, 12, 16);
   }
+
+  public byte[] getHeader() {
+    return header;
+  }
 }

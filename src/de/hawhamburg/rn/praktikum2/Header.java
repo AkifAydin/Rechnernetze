@@ -4,19 +4,22 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class Header {
 
-  public byte[] srcPort, destPort, srcIP, destIP, checksum;
-  public byte[] header;
+  private byte[] srcPort, destPort, srcIP, destIP, checksum;
+  private byte[] header;
 
-  public Header(byte[] srcPort, byte[] destPort, byte[] srcIP, byte[] destIP, byte[] checksum) throws IOException {
+  public Header(byte[] srcPort, byte[] destPort, Inet4Address srcIP, Inet4Address destIP, int checksum) throws IOException {
     this.srcPort = srcPort;
     this.destPort = destPort;
-    this.srcIP = srcIP;
-    this.destIP = destIP;
-    this.checksum = checksum;
+    this.srcIP = srcIP.getAddress();
+    this.destIP = destIP.getAddress();
+    ByteBuffer b = ByteBuffer.allocate(2);
+    b.putInt(checksum);
+    this.checksum = b.array();
     createOutgoingHeader();
   }
 

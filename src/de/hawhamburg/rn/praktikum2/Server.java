@@ -3,6 +3,7 @@ package de.hawhamburg.rn.praktikum2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -16,13 +17,80 @@ public class Server extends Thread {
 
   public void run() {
     try {
-      // A socket is an endpoint for communication between two machines.
-      Socket clientSocket = serverSocket.accept();
-      DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
-      DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
-      // TODO handle incoming messages
+      while (!Thread.currentThread().isInterrupted()) {
+
+        // A socket is an endpoint for communication between two machines.
+        Socket clientSocket = serverSocket.accept();
+        DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
+        DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
+
+        handleMessage(new Message(inputStream.readAllBytes()), outputStream);
+
+      }
     } catch (IOException e) {
       e.printStackTrace();
+    }
+  }
+
+  private void handleMessage(Message message, DataOutputStream outputStream) throws IOException {
+    switch (message.getMsgType()) {
+      case 0 -> // message
+              System.out.println("Nachricht von " + message.getHeader().getDestinationIP() + ": " + message.getUserData());
+      case 1 -> { // connectionRequest
+        handleConnectionRequest(outputStream);
+        Header pingResponseHeader = new Header(Main.PORT, Main.PORT, Main.myIP, message.getHeader().getDestinationIP(),0);
+        Message pingResponse = new Message(pingResponseHeader, 2);
+        outputStream.write(pingResponse.getMessage());
+      }
+      // case 2 pingResponse ??;
+      case 3 -> { // closeConnection
+        Main.routingTable.removeFromTable(message.getHeader().getSourceIP()); // remove sender from routing table
+        handleAliveNot(outputStream, message.getHeader().getSourceIP(), message.getHeader().getSourceIP()); // send aliveNot to all neighbors
+      }
+      case 4 -> { // distanceVector
+        if (Main.routingTable.updateTable(message.getRoutingMap(), message.getHeader().getSourceIP())) {
+          handleDistanceVectorRequest(outputStream, message.getHeader().getSourceIP()); // only continue distanceVectorRouting if routing table was updated
+        }
+      }
+      case 5 -> { // aliveRequest
+        Header pingResponseHeader = new Header(Main.PORT, Main.PORT, Main.myIP, message.getHeader().getDestinationIP(),0);
+        Message pingResponse = new Message(pingResponseHeader, 2);
+        outputStream.write(pingResponse.getMessage()); // answer with ping response
+      }
+      case 6 -> {
+        Main.routingTable.removeFromTable(message.getAliveNotAddress());
+        handleAliveNot(outputStream, message.getHeader().getSourceIP(), message.getAliveNotAddress());
+      }
+    }
+  }
+
+  private void handleConnectionRequest(DataOutputStream outputStream) throws IOException {
+    for (RoutingTable.TableEntry entry : Main.routingTable.getTable()) {
+      if (entry.hopCount == 1) { // table entry for neighbor
+        Header header = new Header(Main.PORT, Main.PORT, Main.myIP, entry.destIP, 0);
+        Message message = new Message(header, 4, Main.routingTable);
+        outputStream.write(message.getMessage());
+      }
+    }
+  }
+
+  private void handleDistanceVectorRequest(DataOutputStream outputStream, Inet4Address neighborAddress) throws IOException {
+    for (RoutingTable.TableEntry entry : Main.routingTable.getTable()) {
+      if (entry.hopCount == 1 && entry.destIP != neighborAddress) { // don't send package to sender of distanceVector message (split horizon)
+        Header header = new Header(Main.PORT, Main.PORT, Main.myIP, entry.destIP, 0);
+        Message message = new Message(header, 4, Main.routingTable);
+        outputStream.write(message.getMessage());
+      }
+    }
+  }
+
+  public void handleAliveNot(DataOutputStream outputStream, Inet4Address neighborAddress, Inet4Address aliveNotAddress) throws IOException {
+    for (RoutingTable.TableEntry entry : Main.routingTable.getTable()) {
+      if (entry.hopCount == 1 && entry.destIP != neighborAddress) { // don't send package to sender of aliveNot message
+        Header header = new Header(Main.PORT, Main.PORT, Main.myIP, entry.destIP, 0);
+        Message message = new Message(header, 6, aliveNotAddress);
+        outputStream.write(message.getMessage());
+      }
     }
   }
 }

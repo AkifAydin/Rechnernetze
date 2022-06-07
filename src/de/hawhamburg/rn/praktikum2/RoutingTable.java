@@ -16,17 +16,35 @@ public class RoutingTable {
     TableEntry entry = new TableEntry(myIP, myIP, 0);
   }
 
-  private void updateTable(Map<Inet4Address, Integer> routingMap, Inet4Address neighbor) {
-    for (Map.Entry<Inet4Address, Integer> entry : routingMap.entrySet()) {
+  /**
+   * Update the routing table.
+   * @param routingMap map containing all the routing table data of the neighbor peer
+   * @param neighbor address of the neighbor peer that sent the received package
+   * @return whether the table was updated during method call
+   */
+  public boolean updateTable(Map<Inet4Address, Byte> routingMap, Inet4Address neighbor) {
+    boolean isUpdated = false;
+    for (Map.Entry<Inet4Address, Byte> entry : routingMap.entrySet()) {
       if (contains(entry.getKey())) {
         if (entry.getValue() + 1 < getEntryByDestIP(entry.getKey()).hopCount) { // if new hop count for existing destIP is smaller
+          isUpdated = true;
           getEntryByDestIP(entry.getKey()).neighbor = neighbor;
           getEntryByDestIP(entry.getKey()).hopCount = entry.getValue() + 1;
         }
       } else {
+        isUpdated = true;
         table.add(new TableEntry(entry.getKey(), neighbor, entry.getValue() + 1));
       }
     }
+    return isUpdated;
+  }
+
+  /**
+   * Removes an entry from the routing table.
+   * @param destIP destination IP to be removed
+   */
+  public void removeFromTable(Inet4Address destIP) {
+    table.remove(getEntryByDestIP(destIP));
   }
 
   public boolean contains(Inet4Address destIP) {
@@ -59,7 +77,7 @@ public class RoutingTable {
   //   return neighbors;
   //}
 
-  public class TableEntry {
+  public static class TableEntry {
     Inet4Address destIP; // destination IP
     Inet4Address neighbor; // neighbor for next hop
     int hopCount; // metric

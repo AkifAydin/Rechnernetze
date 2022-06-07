@@ -1,9 +1,3 @@
 "Client"-Thread
 -> wartet auf User-Eingaben
-
-"Server"-Thread
--> wartet auf eingehende Nachrichten
-
-Nachrichten:
--Header
--Body (verschiedene Nachrichtentypen)
+-> verschiedene Commands definieren, u.a. exit

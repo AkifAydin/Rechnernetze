@@ -1,14 +1,20 @@
 package de.hawhamburg.rn.praktikum2;
 
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 
 public class Main {
 
-  protected static final int PORT = 42069;
-  protected static RoutingTable routingTable;
+  public static final byte[] PORT = {(byte) 164, 85}; // 42069 in 2 bytes
+  public static RoutingTable routingTable;
+  public static Inet4Address myIP;
 
   public static void main(String[] args) throws IOException {
-    new Server(PORT).start();
+    myIP = (Inet4Address) InetAddress.getByAddress(InetAddress.getLocalHost().getAddress());
+    routingTable = new RoutingTable(myIP);
+
+    // new Server(PORT).start();
 
 //    byte[] array = {(byte) 164, 85, (byte) 164, 85,
 //            (byte) 192, (byte) 158, 1, 38,

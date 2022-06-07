@@ -1,49 +1,73 @@
 package de.hawhamburg.rn.praktikum2;
 
 import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 public class RoutingTable {
 
-  public static void main(String[] args) {
-    List<Integer> list = new ArrayList<>();
-    list.set(4, 17);
-    System.out.println(list);
+  private final List<TableEntry> table = new ArrayList<>();
+  //protected List<Inet4Address> neighbors = new ArrayList<>();
+
+  public RoutingTable(Inet4Address myIP) {
+    TableEntry entry = new TableEntry(myIP, myIP, 0);
   }
 
-  // TODO zweidimensionale Listen in der Map
-
-  private Map<Inet4Address, List<Integer>> table;
-  protected List<Inet4Address> neighbors = new ArrayList<>();
-
   private void updateTable(Map<Inet4Address, Integer> routingMap, Inet4Address neighbor) {
-    if (!neighbors.contains(neighbor)) {
-      neighbors.add(neighbor);
-    }
-    int neighborIndex = neighbors.indexOf(neighbor);
     for (Map.Entry<Inet4Address, Integer> entry : routingMap.entrySet()) {
-      if (!table.containsKey(entry.getKey())) {
-        List<Integer> hops = new ArrayList<>();
-        hops.set(neighborIndex, entry.getValue());
-        table.put(entry.getKey(), hops);
+      if (contains(entry.getKey())) {
+        if (entry.getValue() + 1 < getEntryByDestIP(entry.getKey()).hopCount) { // if new hop count for existing destIP is smaller
+          getEntryByDestIP(entry.getKey()).neighbor = neighbor;
+          getEntryByDestIP(entry.getKey()).hopCount = entry.getValue() + 1;
+        }
+      } else {
+        table.add(new TableEntry(entry.getKey(), neighbor, entry.getValue() + 1));
       }
     }
   }
 
-  // returns index of the neighbor with the lowest hop count for given destination IP
-  public int getNeighborIndex(Inet4Address address) {
-    List<Integer> hopCounts = table.get(address);
-    return hopCounts.indexOf(Collections.min(hopCounts));
+  public boolean contains(Inet4Address destIP) {
+    List<Inet4Address> result = new ArrayList<>();
+    for (TableEntry entry : table) {
+      result.add(entry.destIP);
+    }
+    return result.contains(destIP);
   }
 
-  public Map<Inet4Address, List<Integer>> getTable() {
+  // returns index of the neighbor with the lowest hop count for given destination IP
+//  public int getNeighborIndex(Inet4Address address) {
+//    List<Integer> hopCounts = table.get(address);
+//    return hopCounts.indexOf(Collections.min(hopCounts));
+//  }
+
+  public List<TableEntry> getTable() {
     return table;
   }
 
-  public List<Inet4Address> getNeighbors() {
-    return neighbors;
+  public TableEntry getEntryByDestIP(Inet4Address destIP) {
+    List<Inet4Address> temp = new ArrayList<>();
+    for (TableEntry entry : table) {
+      temp.add(entry.destIP);
+    }
+    return table.get(temp.indexOf(destIP));
+  }
+
+  //public List<Inet4Address> getNeighbors() {
+  //   return neighbors;
+  //}
+
+  public class TableEntry {
+    Inet4Address destIP; // destination IP
+    Inet4Address neighbor; // neighbor for next hop
+    int hopCount; // metric
+
+    public TableEntry(Inet4Address destIP, Inet4Address neighbor, int hopCount) {
+      this.destIP = destIP;
+      this.neighbor = neighbor;
+      this.hopCount = hopCount;
+    }
   }
 }

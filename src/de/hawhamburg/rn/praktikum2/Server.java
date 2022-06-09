@@ -25,7 +25,7 @@ public class Server extends Thread {
         DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
 
         handleMessage(new Message(inputStream.readAllBytes()), outputStream);
-
+        clientSocket.close();
       }
     } catch (IOException e) {
       e.printStackTrace();
@@ -42,8 +42,7 @@ public class Server extends Thread {
         Message connectionResponse = new Message(connectionResponseHeader, 2);
         outputStream.write(connectionResponse.getMessage());
       }
-      case 2 -> // connectionResponse
-              System.out.println("Verbindung zu " +  message.getHeader().getSourceIP() + " konnte aufgebaut werden.");
+      //case 2 -> connectionResponse
       case 3 -> { // closeConnection
         Main.routingTable.removeFromTable(message.getHeader().getSourceIP()); // remove sender from routing table
         handleDistanceVectorRequest(outputStream, message.getHeader().getSourceIP());
@@ -53,6 +52,7 @@ public class Server extends Thread {
           handleDistanceVectorRequest(outputStream, message.getHeader().getSourceIP()); // only continue distanceVectorRouting if routing table was updated
         }
       }
+      //TODO Alive-Funktion
       case 5 -> { // aliveRequest
         Header pingResponseHeader = new Header(Main.myIP, message.getHeader().getDestinationIP(), 0);
         Message pingResponse = new Message(pingResponseHeader, 2);

@@ -1,3 +1,5 @@
 "Client"-Thread
 -> wartet auf User-Eingaben
 -> verschiedene Commands definieren, u.a. exit
+
+Alive-Funktion

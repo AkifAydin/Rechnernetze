@@ -21,7 +21,7 @@ public class Message {
   private Inet4Address aliveNotAddress;
   private byte[] message;
 
-  // message types 2, 3, 5
+  // message types 2, 3, 5, 7
   public Message(Header header, int msgType) throws IOException {
     this.header = header;
     this.msgType = msgType;
@@ -57,19 +57,19 @@ public class Message {
   }
 
   public Message(byte[] message) throws UnknownHostException {
-    header = new Header(Arrays.copyOfRange(message, 0, 16));
+    header = new Header(Arrays.copyOfRange(message, 0, 12));
     // message type
-    msgType = message[16];
+    msgType = message[12];
     // message length
     ByteBuffer bb = ByteBuffer.allocate(2);
-    bb.put(message[18]);
-    bb.put(message[19]);
+    bb.put(message[14]);
+    bb.put(message[15]);
     msgLen = bb.getShort(0);
 
     switch (msgType) {
-      case 0 -> userData = Arrays.copyOfRange(message, 20, message.length);
-      case 1, 4 -> createTableEntriesMap(Arrays.copyOfRange(message, 20, message.length));
-      case 6 -> aliveNotAddress = (Inet4Address) InetAddress.getByAddress(Arrays.copyOfRange(message, 20, 24));
+      case 0 -> userData = Arrays.copyOfRange(message, 16, message.length);
+      case 1, 4 -> createTableEntriesMap(Arrays.copyOfRange(message, 16, message.length));
+      case 6 -> aliveNotAddress = (Inet4Address) InetAddress.getByAddress(Arrays.copyOfRange(message, 16, 20));
     }
   }
 

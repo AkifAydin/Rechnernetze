@@ -9,12 +9,10 @@ import java.util.Arrays;
 
 public class Header {
 
-  private byte[] srcPort, destPort, srcIP, destIP, checksum;
+  private byte[] srcIP, destIP, checksum;
   private byte[] header;
 
-  public Header(byte[] srcPort, byte[] destPort, Inet4Address srcIP, Inet4Address destIP, int checksum) throws IOException {
-    this.srcPort = srcPort;
-    this.destPort = destPort;
+  public Header(Inet4Address srcIP, Inet4Address destIP, int checksum) throws IOException {
     this.srcIP = srcIP.getAddress();
     this.destIP = destIP.getAddress();
     ByteBuffer b = ByteBuffer.allocate(2);
@@ -24,8 +22,8 @@ public class Header {
   }
 
   public Header (byte[] header) {
-    if (header.length != 16) {
-      throw new IllegalArgumentException("Wrong header size.\nExpected size: 16\nActual size: " + header.length);
+    if (header.length != 12) {
+      throw new IllegalArgumentException("Wrong header size.\nExpected size: 12\nActual size: " + header.length);
     }
     this.header = header;
     createIncomingHeader();
@@ -33,8 +31,6 @@ public class Header {
 
   private void createOutgoingHeader() throws IOException {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    outputStream.write(srcPort);
-    outputStream.write(destPort);
     outputStream.write(srcIP);
     outputStream.write(destIP);
     outputStream.write(checksum);
@@ -42,11 +38,9 @@ public class Header {
   }
 
   private void createIncomingHeader() {
-    srcPort = Arrays.copyOfRange(header, 0, 2);
-    destPort = Arrays.copyOfRange(header, 2, 4);
-    srcIP = Arrays.copyOfRange(header, 4, 8);
-    destIP = Arrays.copyOfRange(header, 8, 12);
-    checksum = Arrays.copyOfRange(header, 12, 16);
+    srcIP = Arrays.copyOfRange(header, 0, 4);
+    destIP = Arrays.copyOfRange(header, 4, 8);
+    checksum = Arrays.copyOfRange(header, 8, 12);
   }
 
   public byte[] getHeader() {

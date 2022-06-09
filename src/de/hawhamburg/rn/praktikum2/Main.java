@@ -1,12 +1,18 @@
 package de.hawhamburg.rn.praktikum2;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
 
 public class Main {
 
-  public static final byte[] PORT = {(byte) 164, 85}; // 42069 in 2 bytes
+  public static final int PORT = 42069;
   public static RoutingTable routingTable;
   public static Inet4Address myIP;
 
@@ -14,10 +20,43 @@ public class Main {
     myIP = (Inet4Address) InetAddress.getByAddress(InetAddress.getLocalHost().getAddress());
     routingTable = new RoutingTable(myIP);
 
-    // new Server(PORT).start();
+    new Server(PORT).start();
 
-//    byte[] array = {(byte) 164, 85, (byte) 164, 85,
-//            (byte) 192, (byte) 158, 1, 38,
+    System.out.println("Options:");
+    System.out.println("\t• connect to <IP address>: creates a direct connection to a given peer");
+    System.out.println("\t• send message to <IP address>: sends a message to a given peer");
+    System.out.println("\t• close connection: closes the connection to all peers");
+
+    Scanner scanner = new Scanner(System.in);
+
+    while (!Thread.currentThread().isInterrupted()) {
+      String command = scanner.nextLine();
+      InetAddress destinationIP;
+      //TODO check for valid IP addresses, etc.
+      if (command.startsWith("connect to ")) {
+        destinationIP = InetAddress.getByName(command.substring(11));
+        DataOutputStream outputStream = new DataOutputStream(new Socket(destinationIP, PORT).getOutputStream()); // direct connection to destination peer
+        Header connectionHeader = new Header(myIP, (Inet4Address) destinationIP, 0);
+        Message connectionMessage = new Message(connectionHeader, 1, routingTable);
+        outputStream.write(connectionMessage.getMessage());
+        //TODO send request 3 times, ...
+        outputStream.close();
+      } else if (command.startsWith("send message to ")) {
+        destinationIP = InetAddress.getByName(command.substring(16));
+        InetAddress neighbor = routingTable.getEntryByDestIP((Inet4Address) destinationIP).neighbor;
+        DataOutputStream outputStream = new DataOutputStream(new Socket(neighbor, PORT).getOutputStream());
+        System.out.println("Insert message: ");
+        String userData = scanner.nextLine();
+        Header messageHeader = new Header(myIP, (Inet4Address) destinationIP, 0);
+        Message message = new Message(messageHeader,0, userData.getBytes(StandardCharsets.UTF_8));
+        outputStream.write(message.getMessage());
+        outputStream.close();
+      } else if (command.equals("close connection")) {
+        //TODO send closeConnection to all peers in routing table
+      }
+    }
+
+//    byte[] array = {(byte) 192, (byte) 158, 1, 38,
 //            (byte) 192, (byte) 158, 1, 39,
 //            0, 0, 0, 0,
 //            1, 0, 0, 16,

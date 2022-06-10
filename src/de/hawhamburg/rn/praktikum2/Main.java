@@ -1,6 +1,5 @@
 package de.hawhamburg.rn.praktikum2;
 
-import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -19,8 +18,12 @@ public class Main {
     myIP = (Inet4Address) InetAddress.getByAddress(InetAddress.getLocalHost().getAddress());
     routingTable = new RoutingTable(myIP);
 
-    new Server(PORT).start();
+    Server server = new Server(PORT);
+    server.start();
 
+    //TODO new thread that sends out distanceVector messages to all neighbors periodically
+
+    // client
     System.out.println("Options:");
     System.out.println("\t• connect to <IP address>: creates a direct connection to a given peer");
     System.out.println("\t• send message to <IP address>: sends a message to a given peer");
@@ -28,15 +31,20 @@ public class Main {
 
     Scanner scanner = new Scanner(System.in);
 
-    while (!Thread.currentThread().isInterrupted()) {
+    while (true) {
       String command = scanner.nextLine();
-      //TODO check for valid IP addresses, etc.
+      //TODO check for valid input (IP addresses, etc.)
       if (command.startsWith("connect to ")) {
-        connectTo(InetAddress.getByName(command.substring(11)));
+        InetAddress destIP = InetAddress.getByName(command.substring(11));
+        if (connectTo(destIP)) {
+          new AliveFunction(destIP).start();
+        }
       } else if (command.startsWith("send message to ")) {
         sendMessageTo(InetAddress.getByName(command.substring(16)));
       } else if (command.equals("close connection")) {
         closeConnection();
+        server.interrupt();
+        break;
       }
     }
   }
@@ -46,8 +54,10 @@ public class Main {
    *
    * @param destinationIP IP address of the target peer
    * @throws IOException uh oh
+   * @return true if connection could be established
    */
-  public static void connectTo(InetAddress destinationIP) throws IOException {
+  public static boolean connectTo(InetAddress destinationIP) throws IOException {
+    boolean result = false;
     Socket clientSocket = new Socket(destinationIP, PORT);
     clientSocket.setSoTimeout(1000); // read call on input stream will only wait for 1 second
     DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream()); // direct connection to destination peer
@@ -60,13 +70,13 @@ public class Main {
       outputStream.write(connectionMessage.getMessage());
       // wait for and handle connectionResponse
       try {
-        byte[] lenAry = new byte[2];
-        inputStream.readNBytes(lenAry, 14, 2); // throws exception after 1 second of not being able to read the specified bytes
-        ByteBuffer buffer = ByteBuffer.allocate(2);
+        byte[] lenAry = new byte[1];
+        inputStream.readNBytes(lenAry, 12, 1); // throws exception after 1 second of not being able to read the specified byte
+        ByteBuffer buffer = ByteBuffer.allocate(1);
         buffer.put(lenAry[0]);
-        buffer.put(lenAry[1]);
-        if (buffer.getShort(0) == 2) { // check whether message type == 2 (connectionResponse)
+        if (buffer.get(0) == 2) { // check whether message type == 2 (connectionResponse)
           System.out.println("Verbindung zu " + destinationIP + " wurde erfolgreich aufgebaut.");
+          result = true;
           break;
         } else if (++counter == 3) { // print out failure message after 3rd unsuccessful iteration of the loop
           System.out.println("Verbindung zu " + destinationIP + " konnte nicht aufgebaut werden.");
@@ -79,6 +89,7 @@ public class Main {
     }
     inputStream.close();
     outputStream.close();
+    return result;
   }
 
   /**
@@ -105,7 +116,7 @@ public class Main {
    * @throws IOException not good
    */
   public static void closeConnection() throws IOException {
-    for (RoutingTable.TableEntry entry : routingTable.getTable()) {
+    for (RoutingTable.TableEntry entry : routingTable.getEntries()) {
       Inet4Address destinationIP = entry.destIP;
       InetAddress neighbor = routingTable.getEntryByDestIP((Inet4Address) destinationIP).neighbor;
       DataOutputStream outputStream = new DataOutputStream(new Socket(neighbor, PORT).getOutputStream());
@@ -114,6 +125,46 @@ public class Main {
       outputStream.write(message.getMessage());
       outputStream.close();
     }
+  }
+
+  /**
+   * Sends a distanceVector message to all neighbors.
+   *
+   * @throws IOException bad
+   */
+  public static void startDistanceVector() throws IOException {
+    for (RoutingTable.TableEntry entry : Main.routingTable.getEntries()) {
+      if (entry.hopCount == 1) { // table entry for neighbor
+        sendDistanceVector(entry.destIP);
+      }
+    }
+  }
+
+  /**
+   * Sends a distanceVector message to all neighbors except one.
+   *
+   * @param ignoreAddress ignored neighbor
+   * @throws IOException very not good
+   */
+  public static void startDistanceVectorIgnore(Inet4Address ignoreAddress) throws IOException {
+    for (RoutingTable.TableEntry entry : Main.routingTable.getEntries()) {
+      if (entry.hopCount == 1 && entry.destIP != ignoreAddress) { // don't send package to sender of distanceVector message (split horizon)
+        sendDistanceVector(entry.destIP);
+      }
+    }
+  }
+
+  /**
+   * Sends a distanceVector message to the specified peer.
+   *
+   * @param destinationIP target peer
+   */
+  private static void sendDistanceVector(InetAddress destinationIP) throws IOException {
+    Socket socket = new Socket(destinationIP, Main.PORT);
+    DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+    Header header = new Header(Main.myIP, (Inet4Address) destinationIP, 0);
+    Message message = new Message(header, 4, Main.routingTable);
+    outputStream.write(message.getMessage());
   }
 
   //    byte[] array = {(byte) 192, (byte) 158, 1, 38,

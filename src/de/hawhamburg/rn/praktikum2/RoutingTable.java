@@ -16,9 +16,10 @@ public class RoutingTable {
 
   /**
    * Update the routing table.
+   *
    * @param routingMap map containing all the routing table data of the neighbor peer
-   * @param neighbor address of the neighbor peer that sent the received package
-   * @return whether the table was updated during method call
+   * @param neighbor   address of the neighbor peer that sent the received package
+   * @return true if routing table was updated
    */
   public boolean updateTable(Map<Inet4Address, Byte> routingMap, Inet4Address neighbor) {
     boolean isUpdated = false;
@@ -38,11 +39,18 @@ public class RoutingTable {
   }
 
   /**
-   * Removes an entry from the routing table.
-   * @param destIP destination IP to be removed
+   * Removes entries from the routing table. Entries that get removed are either the specified target
+   * or a peer that has the specified target as their next hop.
+   *
+   * @param destIP target peer
    */
   public void removeFromTable(Inet4Address destIP) {
+    // remove target peer entry
     table.remove(getEntryByDestIP(destIP));
+    // remove all entries that have destIP as their next hop
+    for (TableEntry entry : getEntriesByNeighbor(destIP)) {
+      table.remove(entry);
+    }
   }
 
   public boolean contains(Inet4Address destIP) {
@@ -53,13 +61,7 @@ public class RoutingTable {
     return result.contains(destIP);
   }
 
-  // returns index of the neighbor with the lowest hop count for given destination IP
-//  public int getNeighborIndex(Inet4Address address) {
-//    List<Integer> hopCounts = table.get(address);
-//    return hopCounts.indexOf(Collections.min(hopCounts));
-//  }
-
-  public List<TableEntry> getTable() {
+  public List<TableEntry> getEntries() {
     return table;
   }
 
@@ -71,9 +73,15 @@ public class RoutingTable {
     return table.get(temp.indexOf(destIP));
   }
 
-  //public List<Inet4Address> getNeighbors() {
-  //   return neighbors;
-  //}
+  public List<TableEntry> getEntriesByNeighbor(Inet4Address neighborIP) {
+    List<TableEntry> result = new ArrayList<>();
+    for (TableEntry entry : table) {
+      if (entry.neighbor == neighborIP) {
+        result.add(entry);
+      }
+    }
+    return result;
+  }
 
   public static class TableEntry {
     Inet4Address destIP; // destination IP

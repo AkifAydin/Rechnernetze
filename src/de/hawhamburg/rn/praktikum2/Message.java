@@ -85,7 +85,7 @@ public class Message {
   private void createTableEntriesArray(RoutingTable table) throws IOException {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     // for each entry in routing table, add IP address and lowest hop count to message body
-    for (RoutingTable.TableEntry entry : table.getTable()) {
+    for (RoutingTable.TableEntry entry : table.getEntries()) {
       outputStream.write(entry.destIP.getAddress());
       outputStream.write(entry.hopCount);
       this.msgLen += 5; // 4 byte per IP address, 1 byte per hop count

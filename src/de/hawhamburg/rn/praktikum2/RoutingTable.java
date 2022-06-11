@@ -11,10 +11,9 @@ import java.util.Map;
 public class RoutingTable {
 
   private final List<TableEntry> table = new ArrayList<>();
-  //protected List<Inet4Address> neighbors = new ArrayList<>();
 
   public RoutingTable(Inet4Address myIP) {
-    TableEntry entry = new TableEntry(myIP, myIP, 0);
+    table.add(new TableEntry(myIP, myIP, 0)); // initialize table with own peer
   }
 
   /**

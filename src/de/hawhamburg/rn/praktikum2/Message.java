@@ -10,13 +10,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A message.
+ */
 public class Message {
 
   private final Header header;
   private final int msgType;
   private short msgLen;
   private byte[] userData;
-  private final Map<Inet4Address, Byte> routingMap = new HashMap<>(); // for incoming messages
+  private final Map<Inet4Address, Byte> routingMap = new HashMap<>(); // for received messages
   private byte[] routingMapArray; // for outgoing messages
   private Inet4Address aliveNotAddress;
   private byte[] message;
@@ -43,7 +46,7 @@ public class Message {
     this.header = header;
     this.msgType = msgType;
     this.msgLen = 4;
-    createTableEntriesArray(table);
+    createRoutingMapArray(table);
     createMessage();
   }
 
@@ -56,6 +59,7 @@ public class Message {
     createMessage();
   }
 
+  // received message
   public Message(byte[] message) throws UnknownHostException {
     header = new Header(Arrays.copyOfRange(message, 0, 12));
     // message type
@@ -68,12 +72,17 @@ public class Message {
 
     switch (msgType) {
       case 0 -> userData = Arrays.copyOfRange(message, 16, message.length);
-      case 1, 4 -> createTableEntriesMap(Arrays.copyOfRange(message, 16, message.length));
+      case 1, 4 -> createRoutingMap(Arrays.copyOfRange(message, 16, message.length));
       case 6 -> aliveNotAddress = (Inet4Address) InetAddress.getByAddress(Arrays.copyOfRange(message, 16, 20));
     }
   }
 
-  private void createTableEntriesMap(byte[] entries) throws UnknownHostException {
+  /**
+   * Fills the routingMap with entries from an incoming message.
+   *
+   * @param entries entry array
+   */
+  private void createRoutingMap(byte[] entries) throws UnknownHostException {
     for (int i = 0; i < entries.length; i += 5) {
       if (i + 5 < entries.length) { // skip over padding if less than 5 more bytes available
         // add IP address and hop count to map
@@ -82,7 +91,12 @@ public class Message {
     }
   }
 
-  private void createTableEntriesArray(RoutingTable table) throws IOException {
+  /**
+   * Extracts necessary routing information for an outgoing message from the routing table.
+   *
+   * @param table the routing table
+   */
+  private void createRoutingMapArray(RoutingTable table) throws IOException {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     // for each entry in routing table, add IP address and lowest hop count to message body
     for (RoutingTable.TableEntry entry : table.getEntries()) {
@@ -93,6 +107,9 @@ public class Message {
     routingMapArray = outputStream.toByteArray();
   }
 
+  /**
+   * Puts together the byte array for an outgoing message.
+   */
   private void createMessage() throws IOException {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     outputStream.write(header.getHeader());

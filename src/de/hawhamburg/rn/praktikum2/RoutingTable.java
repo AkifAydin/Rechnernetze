@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The routing table.
+ */
 public class RoutingTable {
 
   private final List<TableEntry> table = new ArrayList<>();
@@ -22,20 +25,20 @@ public class RoutingTable {
    * @return true if routing table was updated
    */
   public boolean updateTable(Map<Inet4Address, Byte> routingMap, Inet4Address neighbor) {
-    boolean isUpdated = false;
+    boolean wasUpdated = false;
     for (Map.Entry<Inet4Address, Byte> entry : routingMap.entrySet()) {
       if (contains(entry.getKey())) {
         if (entry.getValue() + 1 < getEntryByDestIP(entry.getKey()).hopCount) { // if new hop count for existing destIP is smaller
-          isUpdated = true;
+          wasUpdated = true;
           getEntryByDestIP(entry.getKey()).neighbor = neighbor;
           getEntryByDestIP(entry.getKey()).hopCount = entry.getValue() + 1;
         }
       } else {
-        isUpdated = true;
+        wasUpdated = true;
         table.add(new TableEntry(entry.getKey(), neighbor, entry.getValue() + 1));
       }
     }
-    return isUpdated;
+    return wasUpdated;
   }
 
   /**
@@ -53,6 +56,11 @@ public class RoutingTable {
     }
   }
 
+  /**
+   * Checks if the routing table contains an entry with a given destination address.
+   * @param destIP the destination IP address
+   * @return true if the entry exists
+   */
   public boolean contains(Inet4Address destIP) {
     List<Inet4Address> result = new ArrayList<>();
     for (TableEntry entry : table) {
@@ -83,6 +91,9 @@ public class RoutingTable {
     return result;
   }
 
+  /**
+   * Entries for the routing table.
+   */
   public static class TableEntry {
     Inet4Address destIP; // destination IP
     Inet4Address neighbor; // neighbor for next hop

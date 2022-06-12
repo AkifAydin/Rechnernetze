@@ -73,11 +73,12 @@ public class RoutingTable {
   }
 
   public TableEntry getEntryByDestIP(Inet4Address destIP) {
-    List<Inet4Address> temp = new ArrayList<>();
     for (TableEntry entry : table) {
-      temp.add(entry.destIP);
+      if (entry.destIP == destIP) {
+        return entry;
+      }
     }
-    return table.get(temp.indexOf(destIP));
+    return null;
   }
 
   public List<TableEntry> getEntriesByNeighbor(Inet4Address neighborIP) {

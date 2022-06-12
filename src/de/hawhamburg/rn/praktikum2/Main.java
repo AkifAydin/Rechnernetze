@@ -4,7 +4,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.*;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
@@ -53,7 +52,7 @@ public class Main {
         }
       } else if (command.startsWith("send message to ")) {
         try {
-          sendMessageTo(InetAddress.getByName(command.substring(11)));
+          sendMessageTo(InetAddress.getByName(command.substring(16)));
         } catch (UnknownHostException e) {
           System.err.println("Invalid IP address.");
         }

@@ -19,7 +19,7 @@ public class Header {
   public Header(Inet4Address srcIP, Inet4Address destIP, int checksum) throws IOException {
     this.srcIP = srcIP.getAddress();
     this.destIP = destIP.getAddress();
-    ByteBuffer b = ByteBuffer.allocate(2);
+    ByteBuffer b = ByteBuffer.allocate(4);
     b.putInt(checksum);
     this.checksum = b.array();
     createOutgoingHeader();

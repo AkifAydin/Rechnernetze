@@ -88,11 +88,8 @@ public class Main {
       outputStream.write(connectionMessage.getMessage());
       // wait for and handle connectionResponse
       try {
-        byte[] lenAry = new byte[1];
-        inputStream.readNBytes(lenAry, 12, 1); // throws exception after 1 second of not being able to read the specified byte
-        ByteBuffer buffer = ByteBuffer.allocate(1);
-        buffer.put(lenAry[0]);
-        if (buffer.get(0) == 2) { // check whether message type == 2 (connectionResponse)
+        Message messageIn = new Message(inputStream.readNBytes(16)); // throws exception after 1 second of not being able to read the specified bytes
+        if (messageIn.getMsgType() == 2) { // check whether message type == 2 (connectionResponse)
           System.out.println("Verbindung zu " + destinationIP + " wurde erfolgreich aufgebaut.");
           break;
         } else if (++counter == 3) { // print out failure message after 3rd unsuccessful iteration of the loop

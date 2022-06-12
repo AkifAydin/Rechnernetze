@@ -21,7 +21,7 @@ public class IsNeighborAlive extends Thread {
 
   public void run() {
     try {
-      Socket socket = new Socket(neighbor, Main.PORT);
+      Socket socket = new Socket(neighbor, Main.PORT2);
       socket.setSoTimeout(Main.ALIVE_WAIT); // make read requests only wait for a certain amount of time
       DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
       DataInputStream inputStream = new DataInputStream(socket.getInputStream());
@@ -53,7 +53,7 @@ public class IsNeighborAlive extends Thread {
   private void connectionLost() throws IOException {
     System.out.println("Connection to " + neighbor + " lost.");
     for (RoutingTable.TableEntry entry : Main.routingTable.getEntries()) {
-      Socket socket = new Socket(entry.destIP, Main.PORT);
+      Socket socket = new Socket(entry.destIP, Main.PORT2);
       DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
       Header aliveNotHeader = new Header(Main.myIP, (Inet4Address) neighbor, 0);
       Message aliveNotMessage = new Message(aliveNotHeader, 6, (Inet4Address) neighbor);

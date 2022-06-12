@@ -13,7 +13,7 @@ public class AliveFunction extends Thread {
             new IsNeighborAlive(entry.destIP).start();
           }
         }
-        Thread.currentThread().wait(Main.ALIVE_WAIT);
+        sleep(Main.ALIVE_WAIT);
       }
     } catch (InterruptedException e) {
       // do nothing

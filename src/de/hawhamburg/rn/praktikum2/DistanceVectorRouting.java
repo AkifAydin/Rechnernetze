@@ -15,7 +15,7 @@ public class DistanceVectorRouting extends Thread {
     try {
       while (!Thread.currentThread().isInterrupted()) {
         startDistanceVector();
-        Thread.currentThread().wait(Main.DVR_WAIT);
+        sleep(Main.DVR_WAIT);
       }
     } catch (IOException | InterruptedException e) {
       // do nothing

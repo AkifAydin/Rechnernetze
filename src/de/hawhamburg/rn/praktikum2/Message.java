@@ -71,7 +71,7 @@ public class Message {
     msgLen = bb.getShort(0);
 
     switch (msgType) {
-      case 0 -> userData = Arrays.copyOfRange(message, 16, message.length);
+      case 0 -> userData = Arrays.copyOfRange(message, 16, 12 + msgLen); // ignore padding
       case 1, 4 -> createRoutingMap(Arrays.copyOfRange(message, 16, message.length));
       case 6 -> aliveNotAddress = (Inet4Address) InetAddress.getByAddress(Arrays.copyOfRange(message, 16, 20));
     }

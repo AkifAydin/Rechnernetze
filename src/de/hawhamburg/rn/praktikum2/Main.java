@@ -15,13 +15,14 @@ public class Main {
   public static final int PORT = 42069; // standard port
   public static RoutingTable routingTable; // routing table
   public static Inet4Address myIP; // local IP address
-  public static final int DVR_WAIT = 10000; // time between automatic distance vector requests (in ms)
+  public static final int DVR_WAIT = 5000; // time between automatic distance vector requests (in ms)
   public static final int ALIVE_WAIT = 667; // time between alive requests (in ms)
   public static final int CR_WAIT = 1000; // time between connection requests (in ms)
 
   public static void main(String[] args) throws IOException, InterruptedException {
     myIP = (Inet4Address) InetAddress.getByAddress(InetAddress.getLocalHost().getAddress());
     routingTable = new RoutingTable(myIP);
+    System.out.println(routingTable.getEntries().get(0).destIP);
 
     // start additional threads
     Server server = new Server(PORT);
@@ -89,14 +90,14 @@ public class Main {
       try {
         Message messageIn = new Message(inputStream.readNBytes(16)); // throws exception after 1 second of not being able to read the specified bytes
         if (messageIn.getMsgType() == 2) { // check whether message type == 2 (connectionResponse)
-          System.out.println("Verbindung zu " + destinationIP + " wurde erfolgreich aufgebaut.");
+          System.out.println("Connection to " + destinationIP.getHostAddress() + " was successfully established.");
           break;
         } else if (++counter == 3) { // print out failure message after 3rd unsuccessful iteration of the loop
-          System.out.println("Verbindung zu " + destinationIP + " konnte nicht aufgebaut werden.");
+          System.err.println("Connection to " + destinationIP.getHostAddress() + " could not be established.");
         }
       } catch (SocketTimeoutException e) {
         if (++counter == 3) { // print out failure message after 3rd unsuccessful iteration of the loop
-          System.out.println("Verbindung zu " + destinationIP + " konnte nicht aufgebaut werden.");
+          System.err.println("Connection to " + destinationIP.getHostAddress() + " could not be established.");
         }
       }
     }

@@ -74,7 +74,7 @@ public class RoutingTable {
 
   public TableEntry getEntryByDestIP(Inet4Address destIP) {
     for (TableEntry entry : table) {
-      if (entry.destIP == destIP) {
+      if (entry.destIP.equals(destIP)) {
         return entry;
       }
     }
@@ -84,7 +84,7 @@ public class RoutingTable {
   public List<TableEntry> getEntriesByNeighbor(Inet4Address neighborIP) {
     List<TableEntry> result = new ArrayList<>();
     for (TableEntry entry : table) {
-      if (entry.neighbor == neighborIP) {
+      if (entry.neighbor.equals(neighborIP)) {
         result.add(entry);
       }
     }

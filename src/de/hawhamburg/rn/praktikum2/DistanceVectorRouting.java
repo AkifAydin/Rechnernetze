@@ -40,7 +40,7 @@ public class DistanceVectorRouting extends Thread {
    */
   public static void continueDistanceVector(Inet4Address ignoreAddress) throws IOException {
     for (RoutingTable.TableEntry entry : Main.routingTable.getEntries()) {
-      if (entry.hopCount == 1 && entry.destIP != ignoreAddress) { // don't send package to sender of distanceVector message (split horizon)
+      if (entry.hopCount == 1 && !entry.destIP.equals(ignoreAddress)) { // don't send package to sender of distanceVector message (split horizon)
         sendDistanceVector(entry.destIP);
       }
     }

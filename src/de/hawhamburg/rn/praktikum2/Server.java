@@ -28,7 +28,7 @@ public class Server extends Thread {
         Message message = new Message(inputStream.readAllBytes());
         switch (message.getMsgType()) {
           case 0 -> // == message
-                  System.out.println("Nachricht von " + message.getHeader().getSourceIP() + ": " + message.getUserData());
+                  System.out.println("Message from " + message.getHeader().getSourceIP().getHostAddress() + ": " + message.getUserData());
           case 1 -> { // == connectionRequest
             // send connectionResponse
             Header connectionResponseHeader = new Header(Main.myIP, message.getHeader().getDestinationIP(), 0);

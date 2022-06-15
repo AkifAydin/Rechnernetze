@@ -51,10 +51,11 @@ public class DistanceVectorRouting extends Thread {
    *
    * @param destinationIP target peer
    */
-  private static void sendDistanceVector(InetAddress destinationIP) throws IOException {
-    Socket socket = new Socket(destinationIP, Main.PORT2); // direct connection to destination peer
+  private static void sendDistanceVector(Inet4Address destinationIP) throws IOException {
+    Inet4Address neighbor = Main.routingTable.getEntryByDestIP(destinationIP).neighbor;
+    Socket socket = new Socket(neighbor, Main.PORT);
     DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
-    Header header = new Header(Main.myIP, (Inet4Address) destinationIP, 0);
+    Header header = new Header(Main.myIP, destinationIP, 0);
     Message message = new Message(header, 4, Main.routingTable);
     outputStream.write(message.getMessage());
     outputStream.close();

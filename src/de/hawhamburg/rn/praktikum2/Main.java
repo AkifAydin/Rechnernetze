@@ -13,7 +13,6 @@ import java.util.Scanner;
 public class Main {
 
   public static int PORT = 42069; // standard port
-  public static int PORT2 = 42069;
   public static RoutingTable routingTable; // routing table
   public static Inet4Address myIP; // local IP address
   public static final int DVR_WAIT = 5000; // time between automatic distance vector requests (in ms)
@@ -21,12 +20,6 @@ public class Main {
   public static final int CR_WAIT = 1000; // time between connection requests (in ms)
 
   public static void main(String[] args) throws IOException, InterruptedException {
-    if (args.length > 0) {
-      PORT = Integer.parseInt(args[0]);
-      if (args.length > 1) {
-        PORT2 = Integer.parseInt(args[1]);
-      }
-    }
 
     myIP = (Inet4Address) InetAddress.getByAddress(InetAddress.getLocalHost().getAddress());
     routingTable = new RoutingTable(myIP);
@@ -84,7 +77,7 @@ public class Main {
    * @param destinationIP IP address of the target peer
    */
   public static void connectTo(InetAddress destinationIP) throws IOException {
-    Socket clientSocket = new Socket(destinationIP, PORT2); // direct connection to destination peer
+    Socket clientSocket = new Socket(destinationIP, PORT); // direct connection to destination peer
     clientSocket.setSoTimeout(CR_WAIT); // read call on input stream will only wait a certain amount of time
     DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
     DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
@@ -120,7 +113,7 @@ public class Main {
    */
   public static void sendMessageTo(InetAddress destinationIP) throws IOException {
     InetAddress neighbor = routingTable.getEntryByDestIP((Inet4Address) destinationIP).neighbor;
-    DataOutputStream outputStream = new DataOutputStream(new Socket(neighbor, PORT2).getOutputStream());
+    DataOutputStream outputStream = new DataOutputStream(new Socket(neighbor, PORT).getOutputStream());
     System.out.println("Insert message: ");
     Scanner scanner = new Scanner(System.in);
     String userData = scanner.nextLine();
@@ -137,7 +130,7 @@ public class Main {
     for (RoutingTable.TableEntry entry : routingTable.getEntries()) {
       Inet4Address destinationIP = entry.destIP;
       InetAddress neighbor = routingTable.getEntryByDestIP(destinationIP).neighbor;
-      DataOutputStream outputStream = new DataOutputStream(new Socket(neighbor, PORT2).getOutputStream());
+      DataOutputStream outputStream = new DataOutputStream(new Socket(neighbor, PORT).getOutputStream());
       Header header = new Header(myIP, destinationIP, 0);
       Message message = new Message(header, 3);
       outputStream.write(message.getMessage());

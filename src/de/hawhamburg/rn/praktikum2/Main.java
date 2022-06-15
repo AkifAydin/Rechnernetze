@@ -92,6 +92,9 @@ public class Main {
         Message messageIn = new Message(inputStream.readNBytes(16)); // throws exception after 1 second of not being able to read the specified bytes
         if (messageIn.getMsgType() == 2) { // check whether message type == 2 (connectionResponse)
           System.out.println("Connection to " + destinationIP.getHostAddress() + " was successfully established.");
+          // add new entry to routing table
+          RoutingTable.TableEntry entry = new RoutingTable.TableEntry((Inet4Address) destinationIP, (Inet4Address) destinationIP,1);
+          routingTable.getEntries().add(entry);
           break;
         } else if (++counter == 3) { // print out failure message after 3rd unsuccessful iteration of the loop
           System.err.println("Connection to " + destinationIP.getHostAddress() + " could not be established.");

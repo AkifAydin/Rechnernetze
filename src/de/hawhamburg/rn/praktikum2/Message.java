@@ -71,8 +71,8 @@ public class Message {
     msgLen = bb.getShort(0);
 
     switch (msgType) {
-      case 0 -> userData = Arrays.copyOfRange(message, 16, 12 + msgLen); // ignore padding
-      case 1, 4 -> createRoutingMap(Arrays.copyOfRange(message, 16, message.length));
+      case 0 -> userData = Arrays.copyOfRange(message, 16, 12 + msgLen); // ignore padding and other unnecessary data
+      case 1, 4 -> createRoutingMap(Arrays.copyOfRange(message, 16, 12 + msgLen)); // ignore padding and other unnecessary data
       case 6 -> aliveNotAddress = (Inet4Address) InetAddress.getByAddress(Arrays.copyOfRange(message, 16, 20));
     }
   }
@@ -84,10 +84,8 @@ public class Message {
    */
   private void createRoutingMap(byte[] entries) throws UnknownHostException {
     for (int i = 0; i < entries.length; i += 5) {
-      if (i + 5 < entries.length) { // skip over padding if less than 5 more bytes available
         // add IP address and hop count to map
         routingMap.put((Inet4Address) Inet4Address.getByAddress(Arrays.copyOfRange(entries, i, i + 4)), entries[i + 4]);
-      }
     }
   }
 
@@ -125,7 +123,7 @@ public class Message {
       case 6 -> outputStream.write(aliveNotAddress.getAddress());
     }
     // add padding for 32 bit alignment
-    for (int i = 0; i < msgLen % 4; i++) {
+    for (int i = 0; i < (4 - msgLen % 4) && (msgLen % 4) != 0; i++) {
       outputStream.write(0);
     }
     message = outputStream.toByteArray();

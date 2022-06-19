@@ -32,7 +32,7 @@ public class Server extends Thread {
                     System.out.println("Message from " + message.getHeader().getSourceIP().getHostAddress() + ": " + message.getUserData());
             case 1 -> { // == connectionRequest
               // send connectionResponse
-              Header connectionResponseHeader = new Header(Main.myIP, message.getHeader().getDestinationIP(), 0);
+              Header connectionResponseHeader = new Header(Main.myIP, message.getHeader().getSourceIP(), 0);
               Message connectionResponse = new Message(connectionResponseHeader, 2);
               DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
               outputStream.write(connectionResponse.getMessage());

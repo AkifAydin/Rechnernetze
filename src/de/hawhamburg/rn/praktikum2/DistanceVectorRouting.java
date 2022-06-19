@@ -3,7 +3,6 @@ package de.hawhamburg.rn.praktikum2;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.net.Socket;
 
 /**
@@ -58,6 +57,7 @@ public class DistanceVectorRouting extends Thread {
     Header header = new Header(Main.myIP, destinationIP, 0);
     Message message = new Message(header, 4, Main.routingTable);
     outputStream.write(message.getMessage());
+    outputStream.flush();
     outputStream.close();
   }
 }

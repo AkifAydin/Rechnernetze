@@ -21,7 +21,7 @@ public class Main {
 
   public static void main(String[] args) throws IOException, InterruptedException {
 
-    myIP = (Inet4Address) InetAddress.getByAddress(InetAddress.getLocalHost().getAddress());
+    myIP = (Inet4Address) InetAddress.getByName("25.80.92.51");//(Inet4Address) InetAddress.getByAddress(InetAddress.getLocalHost().getAddress());
     routingTable = new RoutingTable(myIP);
     System.out.println(routingTable.getEntries().get(0).destIP);
 
@@ -87,8 +87,10 @@ public class Main {
       Header connectionHeader = new Header(myIP, (Inet4Address) destinationIP, 0);
       Message connectionMessage = new Message(connectionHeader, 1, routingTable);
       outputStream.write(connectionMessage.getMessage());
+      outputStream.flush();
       // wait for and handle connectionResponse
       try {
+        System.out.println(inputStream.available());
         Message messageIn = new Message(inputStream.readNBytes(16)); // throws exception after 1 second of not being able to read the specified bytes
         if (messageIn.getMsgType() == 2) { // check whether message type == 2 (connectionResponse)
           System.out.println("Connection to " + destinationIP.getHostAddress() + " was successfully established.");
@@ -123,6 +125,7 @@ public class Main {
     Header messageHeader = new Header(myIP, (Inet4Address) destinationIP, 0);
     Message message = new Message(messageHeader, 0, userData.getBytes(StandardCharsets.UTF_8));
     outputStream.write(message.getMessage());
+    outputStream.flush();
     outputStream.close();
   }
 
@@ -137,6 +140,7 @@ public class Main {
       Header header = new Header(myIP, destinationIP, 0);
       Message message = new Message(header, 3);
       outputStream.write(message.getMessage());
+      outputStream.flush();
       outputStream.close();
     }
   }

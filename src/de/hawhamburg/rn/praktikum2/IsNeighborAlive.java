@@ -30,6 +30,7 @@ public class IsNeighborAlive extends Thread {
       Header header = new Header(Main.myIP, (Inet4Address) neighbor, 0);
       Message message = new Message(header, 5);
       outputStream.write(message.getMessage());
+      outputStream.flush();
 
       try {
         // wait for aliveResponse
@@ -59,6 +60,7 @@ public class IsNeighborAlive extends Thread {
       Header aliveNotHeader = new Header(Main.myIP, (Inet4Address) neighbor, 0);
       Message aliveNotMessage = new Message(aliveNotHeader, 6, (Inet4Address) neighbor);
       outputStream.write(aliveNotMessage.getMessage());
+      outputStream.flush();
       outputStream.close();
     }
   }

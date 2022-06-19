@@ -36,6 +36,7 @@ public class Server extends Thread {
               Message connectionResponse = new Message(connectionResponseHeader, 2);
               DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
               outputStream.write(connectionResponse.getMessage());
+              outputStream.flush();
               outputStream.close();
 
               DistanceVectorRouting.startDistanceVector();
@@ -62,6 +63,7 @@ public class Server extends Thread {
           Socket forwardSocket = new Socket(nextHop, Main.PORT);
           DataOutputStream outputStream = new DataOutputStream(forwardSocket.getOutputStream());
           outputStream.write(message.getMessage());
+          outputStream.flush();
           outputStream.close();
         }
         socket.close();

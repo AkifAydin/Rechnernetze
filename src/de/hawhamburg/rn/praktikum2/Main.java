@@ -65,6 +65,12 @@ public class Main {
         //alive.interrupt();
         //dvr.interrupt();
         break;
+      } else if (command.equals("show table")) {
+        for (int i = 0; i < routingTable.getEntries().size(); i++) {
+          RoutingTable.TableEntry entry = routingTable.getEntries().get(i);
+          System.out.println(entry.destIP + "\t" + entry.hopCount + "\t" + entry.neighbor);
+          System.out.println();
+        }
       } else {
         System.err.println("Invalid command.");
       }

@@ -29,11 +29,11 @@ public class Main {
     Server server = new Server(PORT);
     server.start();
 
-    AliveFunction alive = new AliveFunction();
-    alive.start();
+    //AliveFunction alive = new AliveFunction();
+    //alive.start();
 
-    DistanceVectorRouting dvr = new DistanceVectorRouting();
-    dvr.start();
+    //DistanceVectorRouting dvr = new DistanceVectorRouting();
+    //dvr.start();
 
     // client
     System.out.println("Options:");
@@ -62,8 +62,8 @@ public class Main {
         closeConnection();
         // properly stop all running threads
         server.interrupt();
-        alive.interrupt();
-        dvr.interrupt();
+        //alive.interrupt();
+        //dvr.interrupt();
         break;
       } else {
         System.err.println("Invalid command.");
@@ -90,7 +90,6 @@ public class Main {
       outputStream.flush();
       // wait for and handle connectionResponse
       try {
-        System.out.println(inputStream.available());
         Message messageIn = new Message(inputStream.readNBytes(16)); // throws exception after 1 second of not being able to read the specified bytes
         if (messageIn.getMsgType() == 2) { // check whether message type == 2 (connectionResponse)
           System.out.println("Connection to " + destinationIP.getHostAddress() + " was successfully established.");

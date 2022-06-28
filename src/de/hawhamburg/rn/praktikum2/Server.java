@@ -25,7 +25,7 @@ public class Server extends Thread {
         Socket socket = serverSocket.accept(); // direct connection to destination peer
         DataInputStream inputStream = new DataInputStream(socket.getInputStream());
 
-        Message message = new Message(inputStream.readAllBytes());
+        Message message = new Message(inputStream.readNBytes(24)); // TODO Anzahl an Bytes variabel bestimmen
         if (message.getHeader().getDestinationIP().equals(Main.myIP)) { // message sent directly to this peer?
           switch (message.getMsgType()) {
             case 0 -> // == message

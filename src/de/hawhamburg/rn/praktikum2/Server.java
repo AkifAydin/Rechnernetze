@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * Handles incoming messages.
@@ -25,7 +27,16 @@ public class Server extends Thread {
         Socket socket = serverSocket.accept(); // direct connection to destination peer
         DataInputStream inputStream = new DataInputStream(socket.getInputStream());
 
-        Message message = new Message(inputStream.readNBytes(24)); // TODO Anzahl an Bytes variabel bestimmen
+        // read first 16 bytes to extract message length
+        byte[] firstSixteen = inputStream.readNBytes(16);
+        ByteBuffer bb = ByteBuffer.allocate(2);
+        bb.put(firstSixteen[14]);
+        bb.put(firstSixteen[15]);
+        int msgLen = bb.getShort(0);
+        byte[] msgArray = Arrays.copyOf(firstSixteen,12+msgLen);
+        inputStream.readNBytes(msgArray,16,msgLen-4);
+
+        Message message = new Message(msgArray);
         if (message.getHeader().getDestinationIP().equals(Main.myIP)) { // message sent directly to this peer?
           switch (message.getMsgType()) {
             case 0 -> // == message

@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -129,6 +130,7 @@ public class Main {
     String userData = scanner.nextLine();
     Header messageHeader = new Header(myIP, (Inet4Address) destinationIP, 0);
     Message message = new Message(messageHeader, 0, userData.getBytes(StandardCharsets.UTF_8));
+    System.out.println(Arrays.toString(message.getMessage()));
     outputStream.write(message.getMessage());
     outputStream.flush();
     outputStream.close();

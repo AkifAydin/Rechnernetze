@@ -2,6 +2,7 @@ package de.hawhamburg.rn.praktikum2;
 
 import java.net.Inet4Address;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +42,28 @@ public class RoutingTable {
   }
 
   /**
+   * Update the routing table.
+   *
+   * @param destination address of the destination peer
+   * @return true if routing table was updated
+   */
+  public boolean addEntry(Inet4Address destination) {
+    boolean wasUpdated = false;
+    if (contains(destination)) {
+      TableEntry entry = getEntryByDestIP(destination);
+      if (1 < entry.hopCount) { // if new hop count for existing destIP is smaller
+        wasUpdated = true;
+        entry.neighbor = destination;
+        entry.hopCount = 1;
+      }
+    } else {
+      wasUpdated = true;
+      table.add(new TableEntry(destination, destination, 1));
+    }
+    return wasUpdated;
+  }
+
+  /**
    * Removes entries from the routing table. Entries that get removed are either the specified target
    * or a peer that has the specified target as their next hop.
    *
@@ -57,6 +80,7 @@ public class RoutingTable {
 
   /**
    * Checks if the routing table contains an entry with a given destination address.
+   *
    * @param destIP the destination IP address
    * @return true if the entry exists
    */

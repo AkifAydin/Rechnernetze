@@ -101,8 +101,7 @@ public class Main {
         if (messageIn.getMsgType() == 2) { // check whether message type == 2 (connectionResponse)
           System.out.println("Connection to " + destinationIP.getHostAddress() + " was successfully established.");
           // add new entry to routing table
-          RoutingTable.TableEntry entry = new RoutingTable.TableEntry((Inet4Address) destinationIP, (Inet4Address) destinationIP,1);
-          routingTable.getEntries().add(entry);
+          routingTable.addEntry((Inet4Address) destinationIP);
           break;
         } else if (++counter == 3) { // print out failure message after 3rd unsuccessful iteration of the loop
           System.err.println("Connection to " + destinationIP.getHostAddress() + " could not be established.");
@@ -144,14 +143,16 @@ public class Main {
    */
   public static void closeConnection() throws IOException {
     for (RoutingTable.TableEntry entry : routingTable.getEntries()) {
-      Inet4Address destinationIP = entry.destIP;
-      InetAddress neighbor = routingTable.getEntryByDestIP(destinationIP).neighbor;
-      DataOutputStream outputStream = new DataOutputStream(new Socket(neighbor, PORT).getOutputStream());
-      Header header = new Header(myIP, destinationIP, 0);
-      Message message = new Message(header, 3);
-      outputStream.write(message.getMessage());
-      outputStream.flush();
-      outputStream.close();
+      if (entry.hopCount != 0) {
+        Inet4Address destinationIP = entry.destIP;
+        InetAddress neighbor = routingTable.getEntryByDestIP(destinationIP).neighbor;
+        DataOutputStream outputStream = new DataOutputStream(new Socket(neighbor, PORT).getOutputStream());
+        Header header = new Header(myIP, destinationIP, 0);
+        Message message = new Message(header, 3);
+        outputStream.write(message.getMessage());
+        outputStream.flush();
+        outputStream.close();
+      }
     }
   }
 }

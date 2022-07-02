@@ -64,7 +64,7 @@ public class Main {
         // properly stop all running threads
         server.interrupt();
         //alive.interrupt();
-        //dvr.interrupt();
+        dvr.interrupt();
         break;
       } else if (command.equals("show table")) {
         for (int i = 0; i < routingTable.getEntries().size(); i++) {
@@ -123,17 +123,20 @@ public class Main {
    * @param destinationIP IP address of the target peer
    */
   public static void sendMessageTo(InetAddress destinationIP) throws IOException {
-    InetAddress neighbor = routingTable.getEntryByDestIP((Inet4Address) destinationIP).neighbor;
-    DataOutputStream outputStream = new DataOutputStream(new Socket(neighbor, PORT).getOutputStream());
-    System.out.println("Insert message: ");
-    Scanner scanner = new Scanner(System.in);
-    String userData = scanner.nextLine();
-    Header messageHeader = new Header(myIP, (Inet4Address) destinationIP, 0);
-    Message message = new Message(messageHeader, 0, userData.getBytes(StandardCharsets.UTF_8));
-    System.out.println(Arrays.toString(message.getMessage()));
-    outputStream.write(message.getMessage());
-    outputStream.flush();
-    outputStream.close();
+    RoutingTable.TableEntry entry = routingTable.getEntryByDestIP((Inet4Address) destinationIP);
+    if (entry == null) {
+      System.err.println("Can't find requested peer in the routing table. Message wasn't sent.");
+    } else {
+      DataOutputStream outputStream = new DataOutputStream(new Socket(entry.neighbor, PORT).getOutputStream());
+      System.out.println("Insert message: ");
+      Scanner scanner = new Scanner(System.in);
+      String userData = scanner.nextLine();
+      Header messageHeader = new Header(myIP, (Inet4Address) destinationIP, 0);
+      Message message = new Message(messageHeader, 0, userData.getBytes(StandardCharsets.UTF_8));
+      outputStream.write(message.getMessage());
+      outputStream.flush();
+      outputStream.close();
+    }
   }
 
   /**

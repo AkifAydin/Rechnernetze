@@ -33,8 +33,8 @@ public class Server extends Thread {
         bb.put(firstSixteen[14]);
         bb.put(firstSixteen[15]);
         int msgLen = bb.getShort(0);
-        byte[] msgArray = Arrays.copyOf(firstSixteen,12+msgLen);
-        inputStream.readNBytes(msgArray,16,msgLen-4);
+        byte[] msgArray = Arrays.copyOf(firstSixteen, 12 + msgLen);
+        inputStream.readNBytes(msgArray, 16, msgLen - 4);
 
         Message message = new Message(msgArray);
         if (message.getHeader().getDestinationIP().equals(Main.myIP)) { // message sent directly to this peer?
@@ -50,8 +50,7 @@ public class Server extends Thread {
               outputStream.flush();
               outputStream.close();
 
-              RoutingTable.TableEntry newEntry = new RoutingTable.TableEntry(message.getHeader().getSourceIP(), message.getHeader().getSourceIP(), 1);
-              Main.routingTable.getEntries().add(newEntry);
+              Main.routingTable.updateTable(message.getRoutingMap(), message.getHeader().getSourceIP());
 
               DistanceVectorRouting.startDistanceVector();
             }

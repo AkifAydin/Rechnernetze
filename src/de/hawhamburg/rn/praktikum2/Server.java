@@ -53,7 +53,7 @@ public class Server extends Thread {
               RoutingTable.TableEntry newEntry = new RoutingTable.TableEntry(message.getHeader().getSourceIP(), message.getHeader().getSourceIP(), 1);
               Main.routingTable.getEntries().add(newEntry);
 
-              //DistanceVectorRouting.startDistanceVector();
+              DistanceVectorRouting.startDistanceVector();
             }
             //case 2 == connectionResponse -> handled by the Main/Client thread
             case 3 -> { // == closeConnection

@@ -33,8 +33,8 @@ public class Main {
     //AliveFunction alive = new AliveFunction();
     //alive.start();
 
-    //DistanceVectorRouting dvr = new DistanceVectorRouting();
-    //dvr.start();
+    DistanceVectorRouting dvr = new DistanceVectorRouting();
+    dvr.start();
 
     // client
     System.out.println("Options:");

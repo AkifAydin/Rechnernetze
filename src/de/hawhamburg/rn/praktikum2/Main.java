@@ -17,7 +17,7 @@ public class Main {
   public static RoutingTable routingTable; // routing table
   public static Inet4Address myIP; // local IP address
   public static final int DVR_WAIT = 5000; // time between automatic distance vector requests (in ms)
-  public static final int ALIVE_WAIT = 667; // time between alive requests (in ms)
+  public static final int ALIVE_WAIT = 2000; // time between alive requests (in ms)
   public static final int CR_WAIT = 1000; // time between connection requests (in ms)
 
   public static void main(String[] args) throws IOException, InterruptedException {
@@ -30,8 +30,8 @@ public class Main {
     Server server = new Server(PORT);
     server.start();
 
-    //AliveFunction alive = new AliveFunction();
-    //alive.start();
+    AliveFunction alive = new AliveFunction();
+    alive.start();
 
     DistanceVectorRouting dvr = new DistanceVectorRouting();
     dvr.start();
@@ -63,7 +63,7 @@ public class Main {
         closeConnection();
         // properly stop all running threads
         interruptServer(server);
-        //alive.interrupt();
+        alive.interrupt();
         dvr.interrupt();
         break;
       } else if (command.equals("show table")) {

@@ -24,7 +24,7 @@ public class Message {
   private Inet4Address aliveNotAddress;
   private byte[] message;
 
-  // message types 2, 3, 5, 7
+  // message types 2, 3, 5, 7, 8
   public Message(Header header, int msgType) throws IOException {
     this.header = header;
     this.msgType = msgType;

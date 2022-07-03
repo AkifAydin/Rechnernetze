@@ -70,6 +70,9 @@ public class Server extends Thread {
               DistanceVectorRouting.startDistanceVector();
             }
             //case 7 == aliveResponse -> handled by the AliveFunction thread
+            case 8 -> { //== stopServer
+              // do nothing
+            }
           }
         } else { // forward message
           InetAddress nextHop = Main.routingTable.getEntryByDestIP(message.getHeader().getDestinationIP()).neighbor;

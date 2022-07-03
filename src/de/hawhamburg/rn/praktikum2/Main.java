@@ -62,7 +62,7 @@ public class Main {
       } else if (command.equals("close connection")) {
         closeConnection();
         // properly stop all running threads
-        server.interrupt();
+        interruptServer(server);
         //alive.interrupt();
         dvr.interrupt();
         break;
@@ -139,7 +139,7 @@ public class Main {
   }
 
   /**
-   * Sends a closeConnection message to all peers in routing table.
+   * Sends a closeConnection message to all peers in routing table except yourself.
    */
   public static void closeConnection() throws IOException {
     for (RoutingTable.TableEntry entry : routingTable.getEntries()) {
@@ -154,5 +154,20 @@ public class Main {
         outputStream.close();
       }
     }
+  }
+
+  /**
+   * Interrupts the server thread.
+   * @param server the server thread
+   */
+  public static void interruptServer(Server server) throws IOException {
+    server.interrupt();
+
+    DataOutputStream outputStream = new DataOutputStream(new Socket(myIP, PORT).getOutputStream());
+    Header header = new Header(myIP, myIP, 0);
+    Message message = new Message(header, 8); // stopServer message (necessary if server thread is busy waiting for accept())
+    outputStream.write(message.getMessage());
+    outputStream.flush();
+    outputStream.close();
   }
 }

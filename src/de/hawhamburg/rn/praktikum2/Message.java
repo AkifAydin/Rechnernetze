@@ -61,6 +61,7 @@ public class Message {
 
   // received message
   public Message(byte[] message) throws UnknownHostException {
+    this.message = message;
     header = new Header(Arrays.copyOfRange(message, 0, 12));
     // message type
     msgType = message[12];

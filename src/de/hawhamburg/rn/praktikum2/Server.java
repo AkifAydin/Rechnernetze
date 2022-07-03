@@ -64,7 +64,14 @@ public class Server extends Thread {
                 DistanceVectorRouting.continueDistanceVector(message.getHeader().getSourceIP()); // only continue if routing table was updated
               }
             }
-            //case 5 == aliveRequest -> handled by the AliveFunction thread
+            case 5 -> { // == aliveRequest -> handled by the AliveFunction thread
+              Header aliveResponseHeader = new Header(Main.myIP, message.getHeader().getSourceIP(), 0);
+              Message aliveResponse = new Message(aliveResponseHeader, 7);
+              DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+              outputStream.write(aliveResponse.getMessage());
+              outputStream.flush();
+              outputStream.close();
+            }
             case 6 -> { // == aliveNot
               Main.routingTable.removeFromTable(message.getAliveNotAddress());
               DistanceVectorRouting.startDistanceVector();

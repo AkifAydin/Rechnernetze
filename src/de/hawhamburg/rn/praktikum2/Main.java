@@ -5,7 +5,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -84,36 +83,40 @@ public class Main {
    * @param destinationIP IP address of the target peer
    */
   public static void connectTo(InetAddress destinationIP) throws IOException {
-    Socket clientSocket = new Socket(destinationIP, PORT); // direct connection to destination peer
-    clientSocket.setSoTimeout(CR_WAIT); // read call on input stream will only wait a certain amount of time
-    DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
-    DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
-    int counter = 0;
-    while (counter < 3) {
-      // send connectionRequest
-      Header connectionHeader = new Header(myIP, (Inet4Address) destinationIP, 0);
-      Message connectionMessage = new Message(connectionHeader, 1, routingTable);
-      outputStream.write(connectionMessage.getMessage());
-      outputStream.flush();
-      // wait for and handle connectionResponse
-      try {
-        Message messageIn = new Message(inputStream.readNBytes(16)); // throws exception after 1 second of not being able to read the specified bytes
-        if (messageIn.getMsgType() == 2) { // check whether message type == 2 (connectionResponse)
-          System.out.println("Connection to " + destinationIP.getHostAddress() + " was successfully established.");
-          // add new entry to routing table
-          routingTable.addEntry((Inet4Address) destinationIP);
-          break;
-        } else if (++counter == 3) { // print out failure message after 3rd unsuccessful iteration of the loop
-          System.err.println("Connection to " + destinationIP.getHostAddress() + " could not be established.");
-        }
-      } catch (SocketTimeoutException e) {
-        if (++counter == 3) { // print out failure message after 3rd unsuccessful iteration of the loop
-          System.err.println("Connection to " + destinationIP.getHostAddress() + " could not be established.");
+    try {
+      Socket clientSocket = new Socket(destinationIP, PORT); // direct connection to destination peer
+      clientSocket.setSoTimeout(CR_WAIT); // read call on input stream will only wait a certain amount of time
+      DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
+      DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
+      int counter = 0;
+      while (counter < 3) {
+        // send connectionRequest
+        Header connectionHeader = new Header(myIP, (Inet4Address) destinationIP, 0);
+        Message connectionMessage = new Message(connectionHeader, 1, routingTable);
+        outputStream.write(connectionMessage.getMessage());
+        outputStream.flush();
+        // wait for and handle connectionResponse
+        try {
+          Message messageIn = new Message(inputStream.readNBytes(16)); // throws exception after 1 second of not being able to read the specified bytes
+          if (messageIn.getMsgType() == 2) { // check whether message type == 2 (connectionResponse)
+            System.out.println("Connection to " + destinationIP.getHostAddress() + " was successfully established.");
+            // add new entry to routing table
+            routingTable.addEntry((Inet4Address) destinationIP);
+            break;
+          } else if (++counter == 3) { // print out failure message after 3rd unsuccessful iteration of the loop
+            System.err.println("Connection to " + destinationIP.getHostAddress() + " could not be established.");
+          }
+        } catch (SocketTimeoutException e) {
+          if (++counter == 3) { // print out failure message after 3rd unsuccessful iteration of the loop
+            System.err.println("Connection to " + destinationIP.getHostAddress() + " could not be established.");
+          }
         }
       }
+      inputStream.close();
+      outputStream.close();
+    } catch (ConnectException e) {
+      System.err.println("Connection to " + destinationIP.getHostAddress() + " could not be established.");
     }
-    inputStream.close();
-    outputStream.close();
   }
 
   /**
@@ -122,19 +125,23 @@ public class Main {
    * @param destinationIP IP address of the target peer
    */
   public static void sendMessageTo(InetAddress destinationIP) throws IOException {
-    RoutingTable.TableEntry entry = routingTable.getEntryByDestIP((Inet4Address) destinationIP);
-    if (entry == null) {
-      System.err.println("Can't find requested peer in the routing table. Message wasn't sent.");
-    } else {
-      DataOutputStream outputStream = new DataOutputStream(new Socket(entry.neighbor, PORT).getOutputStream());
-      System.out.println("Insert message: ");
-      Scanner scanner = new Scanner(System.in);
-      String userData = scanner.nextLine();
-      Header messageHeader = new Header(myIP, (Inet4Address) destinationIP, 0);
-      Message message = new Message(messageHeader, 0, userData.getBytes(StandardCharsets.UTF_8));
-      outputStream.write(message.getMessage());
-      outputStream.flush();
-      outputStream.close();
+    try {
+      RoutingTable.TableEntry entry = routingTable.getEntryByDestIP((Inet4Address) destinationIP);
+      if (entry == null) {
+        System.err.println("Can't find requested peer in the routing table. Message wasn't sent.");
+      } else {
+        DataOutputStream outputStream = new DataOutputStream(new Socket(entry.neighbor, PORT).getOutputStream());
+        System.out.println("Insert message: ");
+        Scanner scanner = new Scanner(System.in);
+        String userData = scanner.nextLine();
+        Header messageHeader = new Header(myIP, (Inet4Address) destinationIP, 0);
+        Message message = new Message(messageHeader, 0, userData.getBytes(StandardCharsets.UTF_8));
+        outputStream.write(message.getMessage());
+        outputStream.flush();
+        outputStream.close();
+      }
+    } catch (ConnectException e) {
+      System.err.println("Connection timed out. Message could not be sent.");
     }
   }
 

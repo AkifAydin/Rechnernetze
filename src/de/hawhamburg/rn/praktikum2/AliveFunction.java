@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.ConcurrentModificationException;
 
 /**
  * Periodically checks whether the direct neighbors are still available.
@@ -47,7 +48,7 @@ public class AliveFunction extends Thread {
         }
         sleep(Main.ALIVE_WAIT);
       }
-    } catch (InterruptedException e) {
+    } catch (InterruptedException | ConcurrentModificationException e) {
       // do nothing
     }
   }

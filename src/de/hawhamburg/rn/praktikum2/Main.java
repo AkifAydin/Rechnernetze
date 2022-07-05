@@ -115,7 +115,7 @@ public class Main {
       inputStream.close();
       outputStream.close();
     } catch (ConnectException e) {
-      System.err.println("Connection to " + destinationIP.getHostAddress() + " could not be established.");
+      System.err.println("Connection to " + destinationIP.getHostAddress() + " could not be established (timed out).");
     }
   }
 
